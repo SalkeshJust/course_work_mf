@@ -57,6 +57,8 @@ line:	EOL {cur_line++;}
 
 	| include
 
+	| define
+
 	| ERROR	
 
 	;
@@ -249,6 +251,42 @@ var_cond:	unit
 		;
 
 include:	INCLUDE units EOL;
+
+define:	DEFINE NAME EOL def_commands ENDEF EOL;
+
+def_commands:
+
+	def_command
+
+	| def_commands def_command
+
+	;
+	
+def_command:
+
+	VAR_DEF
+
+	| SHELL_COMMAND
+
+	| FILE_NAME
+
+	| PATH
+
+	| var_val
+
+	| FUNCTION
+
+	| VAR_AUT
+
+	| string_const
+
+	| COMMAND
+	
+	| EOL
+
+	| ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '!'
+
+	;
 
 units:	unit
 
