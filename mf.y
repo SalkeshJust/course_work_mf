@@ -8,11 +8,14 @@ extern FILE *yyin;
 extern FILE *yyout;
 extern int yylex();
 
-void yyerror(char *s)
+int yyparse();
+int yyerror(char *s)
 {
 	fprintf(stderr, "%s\n", s);
+	return 0;
 }
 
+int cur_line = 0;
 FILE* openFile();
 %}
 
@@ -23,42 +26,53 @@ FILE* openFile();
 
 %token VAR_DEF
 
-%token EOL
+%token EOL ERROR
 %token EXPORT
+%token <str> TEMPLATE
+%token <str> VAR_DEF
 %token <str> PATH
 %token <str> VAR_AUT
-%token <str> CHARS
 %token <str> NAME
 %token <str> FILE_NAME
 %token <str> SPECIAL
 
 %%
 
-lines:
+lines:  /* */
 
-	line
+	| line
 
 	| lines line
 
 	;
 
-line:	EOL
+line:	EOL {cur_line++;}
 
 	| target
 
+	| var
+
+	| ERROR	
+
 	;
 
-target:	target_is ':' prequisite EOL 
+target:	target_is prequisites EOL {cur_line++;} 
 
-	| target_is ':' prequisites ';' EOL
+	| target_is prequisites ';' EOL {cur_line++;}
 	
 	;
 
-target_is: 
+target_is:
 
-	target_names
-	
-	| SPECIAL {printf("special");}
+	template
+
+	| target_names ':' 
+
+	| target_names ':' ':' 
+
+	| SPECIAL ':' {printf("special");}
+
+	| SPECIAL ':' ':' {printf("special");}
 
 	;
 
@@ -78,6 +92,16 @@ target_name:
 
 	| FILE_NAME {printf("target_file");}
 
+	| template
+
+	;
+
+template:
+
+	TEMPLATE {printf("template");}
+
+	| '(' TEMPLATE ')' {printf("template");}
+
 	;
 
 prequisites:
@@ -96,62 +120,76 @@ prequisite:
 
 	| FILE_NAME {printf("prequisite_file");}
 
-	;
-/*
-VAR:	VAR_NAME VAR_DEF EOL
-
-	| VAR_NAME VAR_DEF VAR_UNITS EOL
-	
-	| EXPORT TEXT EOL
-
-	| EXPORT VAR
+	| var_val {printf("prequisite_var_val");}
 
 	;
 
-VAR_NAME:
+var:	var_name VAR_DEF EOL
 
-	TEXT
+	| var_name VAR_DEF var_units EOL
+	
+	| EXPORT NAME EOL
+
+	| EXPORT var EOL
+
+	;
+
+var_name:
+
+	NAME {printf("name");}
 	
 	;
 
-VAR_UNITS:
-	
-	TEXT
+var_units:
 
-	| CHARS
+	 var_unit
+
+	| var_units var_unit
+
+	| var_units var_oper var_unit
+
+	| var_units VAR_DEF var_unit
+
+	| var_units '(' var_units ')'
+
+	| var_units '{' var_units '}'
+
+	| var_val
+
+	;
+
+var_unit:
+	
+	NAME
+
+	| FILE_NAME
 
 	| PATH
 
-	| FILE_NAME	
+	;
 
-	VAR_UNIT
+var_oper: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' ;
 
-	| VAR_UNITS VAR_UNIT
+var_val:
 
-	| VAR_UNITS TEXT
+	'$' NAME
+
+	| '$' '$' NAME
+
+	| '$' '(' NAME ')'
+
+	| '$' '{' NAME '}' 
+
+	| '$' '(' var_unit ')'
+
+	| '$' '{' var_unit '}'
+
+	| '$' '$' '(' var_units ')'
 	
-	| VAR_UNITS CHARS
-
-	| VAR_UNITS PATH
-
-	| VAR_UNITS FILE_NAME
-
-	| VAR_UNITS '(' VAR_UNITS ')'
-
-	| VAR_UNITS '{' VAR_UNITS '}'
+	| '$' '$' '{' var_units '}'
 
 	;
-
-VAR_UNIT:
-	VAR_DEF
-
-	| VAR_UNIT_SPEC
-
-	| VAR_VAL
-
-	| VAR_AUT
-
-	;
+/*
 
 VAR_UNIT_SPEC: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>';
 

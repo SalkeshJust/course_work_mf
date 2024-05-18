@@ -1,3 +1,4 @@
-all : /hello/there/test.txt
+%.o : test worpo $(A)
+A := /hello/*
 
 
