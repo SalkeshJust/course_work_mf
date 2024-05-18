@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.8.2.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -31,9 +31,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_MF_TAB_H_INCLUDED
 # define YY_YY_MF_TAB_H_INCLUDED
@@ -45,40 +44,35 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    EOL = 258,                     /* EOL  */
-    ERROR = 259,                   /* ERROR  */
-    DEFINE = 260,                  /* DEFINE  */
-    DEFINELINE = 261,              /* DEFINELINE  */
-    ENDEF = 262,                   /* ENDEF  */
-    INCLUDE = 263,                 /* INCLUDE  */
-    EXPORT = 264,                  /* EXPORT  */
-    IFDEF = 265,                   /* IFDEF  */
-    IFNDEF = 266,                  /* IFNDEF  */
-    IFEQ = 267,                    /* IFEQ  */
-    IFNEQ = 268,                   /* IFNEQ  */
-    ELSE = 269,                    /* ELSE  */
-    ENDIF = 270,                   /* ENDIF  */
-    TEMPLATE = 271,                /* TEMPLATE  */
-    VAR_DEF = 272,                 /* VAR_DEF  */
-    PATH = 273,                    /* PATH  */
-    FUNCTION = 274,                /* FUNCTION  */
-    VAR_AUT = 275,                 /* VAR_AUT  */
-    NAME = 276,                    /* NAME  */
-    FILE_NAME = 277,               /* FILE_NAME  */
-    SPECIAL = 278,                 /* SPECIAL  */
-    COMMAND = 279,                 /* COMMAND  */
-    SHELL_COMMAND = 280            /* SHELL_COMMAND  */
+    EOL = 258,
+    ERROR = 259,
+    DEFINE = 260,
+    DEFINELINE = 261,
+    ENDEF = 262,
+    INCLUDE = 263,
+    EXPORT = 264,
+    IFDEF = 265,
+    IFNDEF = 266,
+    IFEQ = 267,
+    IFNEQ = 268,
+    ELSE = 269,
+    ENDIF = 270,
+    TEMPLATE = 271,
+    VAR_DEF = 272,
+    PATH = 273,
+    FUNCTION = 274,
+    VAR_AUT = 275,
+    NAME = 276,
+    FILE_NAME = 277,
+    SPECIAL = 278,
+    COMMAND = 279,
+    SHELL_COMMAND = 280
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
@@ -89,7 +83,7 @@ union YYSTYPE
 
 	char *str;
 
-#line 93 "mf.tab.h"
+#line 87 "mf.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -100,8 +94,6 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
-
 int yyparse (void);
-
 
 #endif /* !YY_YY_MF_TAB_H_INCLUDED  */

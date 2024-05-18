@@ -94,7 +94,7 @@ $("@"|"%"|"<"|"?"|"^"|"+"|"*") {return VAR_AUT;}
 "%"([\.]({TEXT})+)+ {return TEMPLATE;}
 	
 ({TEXT}|{DIGIT})+ {yylval.str = strdup(yytext); return NAME;}
-({TEXT}|{DIGIT})+([\.]({TEXT})+)+ {yylval.str = strdup(yytext); return FILE_NAME;}  
+(({TEXT}|{DIGIT})+)?([\.]({TEXT})+)+ {yylval.str = strdup(yytext); return FILE_NAME;}  
 (\/|[\.\.]|[\.])?(({TEXT}|{DIGIT}|[\.]|[\.\.])+[\/]?)+([\/]|[\/\*])? {yylval.str = strdup(yytext); return PATH;}
 %%
 

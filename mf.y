@@ -99,6 +99,8 @@ target_name:
 
 	| FILE_NAME {printf("target_file");}
 
+	| var_val
+
 	| template
 
 	;
@@ -113,7 +115,9 @@ template:
 
 prequisites:
 
-	prequisite
+	/* */
+
+	| prequisite
 
 	| prequisites prequisite
 
@@ -204,6 +208,17 @@ var_val:
 	| '$' '$' '(' var_units ')'
 	
 	| '$' '$' '{' var_units '}'
+
+	| '$' '(' var_unit ':' elem VAR_DEF elem ')'
+
+	| '$' '{' var_unit ':' elem VAR_DEF elem '}'
+
+	;
+
+elem:
+	NAME
+
+	| FILE_NAME
 
 	;
 
