@@ -51,27 +51,29 @@ extern int yydebug;
   {
     EOL = 258,
     ERROR = 259,
-    DEFINE = 260,
-    DEFINELINE = 261,
-    ENDEF = 262,
-    INCLUDE = 263,
-    EXPORT = 264,
-    IFDEF = 265,
-    IFNDEF = 266,
-    IFEQ = 267,
-    IFNEQ = 268,
-    ELSE = 269,
-    ENDIF = 270,
-    TEMPLATE = 271,
-    VAR_DEF = 272,
-    PATH = 273,
-    FUNCTION = 274,
-    VAR_AUT = 275,
-    NAME = 276,
-    FILE_NAME = 277,
-    SPECIAL = 278,
-    COMMAND = 279,
-    SHELL_COMMAND = 280
+    COMMENT = 260,
+    COMMAND_FOR_SHELL = 261,
+    DEFINE = 262,
+    DEFINELINE = 263,
+    ENDEF = 264,
+    INCLUDE = 265,
+    EXPORT = 266,
+    IFDEF = 267,
+    IFNDEF = 268,
+    IFEQ = 269,
+    IFNEQ = 270,
+    ELSE = 271,
+    ENDIF = 272,
+    TEMPLATE = 273,
+    VAR_DEF = 274,
+    PATH = 275,
+    FUNCTION = 276,
+    VAR_AUT = 277,
+    NAME = 278,
+    FILE_NAME = 279,
+    SPECIAL = 280,
+    COMMAND = 281,
+    SHELL_COMMAND = 282
   };
 #endif
 
@@ -83,7 +85,7 @@ union YYSTYPE
 
 	char *str;
 
-#line 87 "mf.tab.h"
+#line 89 "mf.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

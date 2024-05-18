@@ -24,7 +24,7 @@ FILE* openFile();
 	char *str;
 }
 
-%token EOL ERROR
+%token EOL ERROR COMMENT COMMAND_FOR_SHELL
 %token DEFINE DEFINELINE ENDEF INCLUDE EXPORT IFDEF IFNDEF IFEQ IFNEQ ELSE ENDIF
 %token <str> TEMPLATE
 %token <str> VAR_DEF
@@ -45,7 +45,9 @@ lines:  /* */
 
 	;
 
-line:	EOL {cur_line++;}
+line:	
+
+	end_of_line
 
 	| target
 
@@ -63,10 +65,10 @@ line:	EOL {cur_line++;}
 
 	;
 
-target:	target_is prequisites EOL {cur_line++;} 
+target:	target_is prequisites end_of_line
 
-	| target_is prequisites ';' EOL {cur_line++;}
-	
+	| target_is prequisites ';' end_of_line
+
 	;
 
 target_is:
@@ -89,6 +91,8 @@ target_names:
 
 	| target_names target_name
 
+	| target_names '/' target_name
+
 	;
 
 target_name:
@@ -109,21 +113,27 @@ template:
 
 prequisites:
 
-	/* */
+	prequisite
 
-	| unit
-
-	| prequisites unit
+	| prequisites prequisite
 
 	;
 
-var:	var_name VAR_DEF EOL
-
-	| var_name VAR_DEF var_units EOL
+prequisite: /* */
 	
-	| EXPORT NAME EOL
+	| unit
+	
+	| template
 
-	| EXPORT var EOL
+	;
+
+var:	var_name VAR_DEF end_of_line
+
+	| var_name VAR_DEF var_units end_of_line
+	
+	| EXPORT NAME EOL end_of_line
+
+	| EXPORT var EOL end_of_line
 
 	;
 
@@ -141,7 +151,7 @@ var_units:
 
 	| var_units var_oper var_unit
 
-	| var_units ')'
+	| var_units FUNCTION var_units ')' 
 
 	| var_units VAR_DEF var_unit
 
@@ -149,23 +159,21 @@ var_units:
 
 	| var_units '{' var_units '}'
 
+	;
+
+var_unit:
+
+	/* */
+	
+	| unit
+
+	| string_const
+
 	| var_val
 
 	;
 
-var_unit:
-	
-	unit
-
-	| string_const
-
-	| SHELL_COMMAND
-
-	| FUNCTION 
-
-	;
-
-var_oper: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' ;
+var_oper: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' | ',';
 
 var_val:
 
@@ -181,31 +189,38 @@ var_val:
 	
 	| '$' '$' '{' var_units '}'
 
-	| '$' '(' var_unit ':' elem VAR_DEF elem ')'
+	| '$' '(' var_unit ':' elems VAR_DEF elems ')'
 
-	| '$' '{' var_unit ':' elem VAR_DEF elem '}'
+	| '$' '{' var_unit ':' elems VAR_DEF elems '}'
+
+	;
+elems: elem
+
+	| elem '/' elem
 
 	;
 
-elem: NAME | FILE_NAME ;
+elem: NAME | FILE_NAME | var_val | template;
 
-cmd:	COMMAND EOL ;
+cmd:	COMMAND end_of_line ;
 
-cond:	if conds EOL
+cond:	if conds end_of_line
 	
-	| if '(' conds ')' EOL
+	| if '(' conds ')' end_of_line
 
-	| ifdef unit EOL
+	| ifdef unit end_of_line
 
-	| ELSE
+	| ELSE end_of_line
 
-	| ENDIF
+	| ENDIF end_of_line
+
 
 	;
 
 if:	IFEQ | IFNEQ ;
 
 ifdef:	IFDEF | IFNDEF ;
+
 conds: string_conds | var_conds ;
 
 var_conds:	var_cond
@@ -224,11 +239,13 @@ var_cond:	unit
 
 		;
 
-include:	INCLUDE units EOL;
+include:	INCLUDE units end_of_line;
 
-define:	DEFINE NAME EOL def_commands ENDEF EOL
-	| DEFINELINE NAME def_command EOL
-;
+define:	DEFINE NAME end_of_line def_commands ENDEF end_of_line
+
+	| DEFINELINE NAME def_command end_of_line
+
+	;
 
 def_commands:
 
@@ -258,7 +275,7 @@ def_command:
 
 	| COMMAND
 	
-	| EOL
+	| end_of_line
 
 	| ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '!'
 
@@ -294,6 +311,7 @@ string_const:
 
 	;
 
+end_of_line: EOL | COMMENT EOL ;
 	
 %%
 
