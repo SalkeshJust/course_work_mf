@@ -44,10 +44,35 @@
 extern int yydebug;
 #endif
 
+/* Token type.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+  enum yytokentype
+  {
+    VAR_DEF = 258,
+    EOL = 259,
+    EXPORT = 260,
+    PATH = 261,
+    VAR_AUT = 262,
+    CHARS = 263,
+    NAME = 264,
+    FILE_NAME = 265,
+    SPECIAL = 266
+  };
+#endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 20 "mf.y"
+
+	char *str;
+
+#line 73 "mf.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
