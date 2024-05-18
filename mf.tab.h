@@ -54,16 +54,28 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    VAR_DEF = 258,                 /* VAR_DEF  */
-    EOL = 259,                     /* EOL  */
-    ERROR = 260,                   /* ERROR  */
-    EXPORT = 261,                  /* EXPORT  */
-    TEMPLATE = 262,                /* TEMPLATE  */
-    PATH = 263,                    /* PATH  */
-    VAR_AUT = 264,                 /* VAR_AUT  */
-    NAME = 265,                    /* NAME  */
-    FILE_NAME = 266,               /* FILE_NAME  */
-    SPECIAL = 267                  /* SPECIAL  */
+    EOL = 258,                     /* EOL  */
+    ERROR = 259,                   /* ERROR  */
+    DEFINE = 260,                  /* DEFINE  */
+    ENDEF = 261,                   /* ENDEF  */
+    INCLUDE = 262,                 /* INCLUDE  */
+    EXPORT = 263,                  /* EXPORT  */
+    IFDEF = 264,                   /* IFDEF  */
+    IFNDEF = 265,                  /* IFNDEF  */
+    IFEQ = 266,                    /* IFEQ  */
+    IFNEQ = 267,                   /* IFNEQ  */
+    ELSE = 268,                    /* ELSE  */
+    ENDIF = 269,                   /* ENDIF  */
+    TEMPLATE = 270,                /* TEMPLATE  */
+    VAR_DEF = 271,                 /* VAR_DEF  */
+    PATH = 272,                    /* PATH  */
+    FUNCTION = 273,                /* FUNCTION  */
+    VAR_AUT = 274,                 /* VAR_AUT  */
+    NAME = 275,                    /* NAME  */
+    FILE_NAME = 276,               /* FILE_NAME  */
+    SPECIAL = 277,                 /* SPECIAL  */
+    COMMAND = 278,                 /* COMMAND  */
+    SHELL_COMMAND = 279            /* SHELL_COMMAND  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -76,7 +88,7 @@ union YYSTYPE
 
 	char *str;
 
-#line 80 "mf.tab.h"
+#line 92 "mf.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

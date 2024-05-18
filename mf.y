@@ -24,17 +24,16 @@ FILE* openFile();
 	char *str;
 }
 
-%token VAR_DEF
-
 %token EOL ERROR
-%token EXPORT
+%token DEFINE ENDEF INCLUDE EXPORT IFDEF IFNDEF IFEQ IFNEQ ELSE ENDIF
 %token <str> TEMPLATE
 %token <str> VAR_DEF
 %token <str> PATH
+%token <str> FUNCTION
 %token <str> VAR_AUT
 %token <str> NAME
 %token <str> FILE_NAME
-%token <str> SPECIAL
+%token <str> SPECIAL COMMAND SHELL_COMMAND
 
 %%
 
@@ -51,6 +50,12 @@ line:	EOL {cur_line++;}
 	| target
 
 	| var
+
+	| cmd
+
+	| cond
+
+	| include
 
 	| ERROR	
 
@@ -148,6 +153,8 @@ var_units:
 
 	| var_units var_oper var_unit
 
+	| var_units ')'
+
 	| var_units VAR_DEF var_unit
 
 	| var_units '(' var_units ')'
@@ -162,9 +169,17 @@ var_unit:
 	
 	NAME
 
+	| '\'' NAME '\''
+
+	| '\"' NAME '\"'
+
 	| FILE_NAME
 
 	| PATH
+
+	| SHELL_COMMAND
+
+	| FUNCTION {printf("function\n");}
 
 	;
 
@@ -189,30 +204,83 @@ var_val:
 	| '$' '$' '{' var_units '}'
 
 	;
-/*
 
-VAR_UNIT_SPEC: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>';
+cmd:	COMMAND EOL {printf("command");};
 
-VAR_VAL:
-	'$' TEXT
-	| '$' '$' TEXT
-	| '$' '(' TEXT ')'
-	| '$' '{' TEXT ')'
-	| '$' '(' VAR_UNIT ')'
-	| '$' '{' VAR_UNIT ')'
-	| '$' '$' '(' VAR_UNIT ')'
-	| '$' '$' '{' VAR_UNIT '}'
-	| '$' '(' TEXT ':' SUB VAR_DEF SUB ')'
-	| '$' '{' TEXT ':' SUB VAR_DEF SUB '}'
-	| '$' '(' VAR_UNIT ':' SUB VAR_DEF SUB ')'
-	| '$' '{' VAR_UNIT ':' SUB VAR_DEF SUB '}'
+cond:	if conds EOL
+	
+	| if '(' conds ')' EOL
 
-SUB:
-	TEXT
-	| FILE_NAME
+	| ifdef unit EOL
+
+	| ELSE
+
+	| ENDIF
+
 	;
 
-*/
+if:	IFEQ
+
+	| IFNEQ
+
+	;
+
+ifdef:	IFDEF
+
+	|IFNDEF
+
+	;
+conds: string_conds | var_conds ;
+
+var_conds:	var_cond
+
+		| var_conds ',' var_cond
+
+		;
+
+var_cond:	unit
+
+		| VAR_AUT
+
+		| string_const
+
+		| FUNCTION
+
+		;
+
+include:	INCLUDE units EOL;
+
+units:	unit
+
+	| units unit
+
+	;
+
+unit:	NAME
+
+	| PATH
+
+	| FILE_NAME
+
+	| var_val
+
+	;	
+
+string_conds:	string_const
+	
+		| string_conds string_const
+
+		;
+ 
+string_const:
+
+	'\'' NAME '\''
+
+	| '\"' NAME '\"'
+
+	;
+
+	
 %%
 
 FILE* openFile(int argc,char* argv[])
@@ -220,7 +288,7 @@ FILE* openFile(int argc,char* argv[])
 	FILE *f;
 	if (argc == 1)
 	{
-		//yyerror("Please write a file, we can't work without it.");
+		yyerror("Please write a file, we can't work without it.\n");
 		return;
 	}
 	else if(argc == 2)
@@ -228,10 +296,10 @@ FILE* openFile(int argc,char* argv[])
 		f = fopen(argv[1], "r");
 		if(!f)
 		{
-		//	yyerror("Can't open your file.");
+			yyerror("Can't open your file.\n");
 			return;
 		}
-		//printf("File is opened");
+		printf("File %s is opened\n", argv[1]);
 		return f;
 	}
 }

@@ -1,4 +1,3 @@
-%.o : test worpo $(A)
-A := /hello/*
-
-
+A := $(addsuffix hello)
+ifeq ($(A), $(BOBA))
+include test.txt
