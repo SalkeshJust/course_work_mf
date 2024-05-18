@@ -84,7 +84,7 @@ $\(word		{return FUNCTION;}
 \'          { return '\''; }
 
 \n	    { return EOL;}
-
+<<EOF>>	    { static int once = 0; return once++ ? 0 : EOL;}
 
 "::="|"="|[":"|"!"|"?"|"+"]"=" {return VAR_DEF;}
 $("@"|"%"|"<"|"?"|"^"|"+"|"*") {return VAR_AUT;}

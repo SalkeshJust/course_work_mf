@@ -1391,6 +1391,10 @@ YY_RULE_SETUP
 #line 86 "mf.lex"
 { return EOL;}
 	YY_BREAK
+case YY_STATE_EOF(INITIAL):
+#line 87 "mf.lex"
+{ static int once = 0; return once++ ? 0 : EOL;}
+	YY_BREAK
 case 69:
 YY_RULE_SETUP
 #line 89 "mf.lex"
@@ -1431,9 +1435,7 @@ YY_RULE_SETUP
 #line 99 "mf.lex"
 ECHO;
 	YY_BREAK
-#line 1435 "lex.yy.c"
-case YY_STATE_EOF(INITIAL):
-	yyterminate();
+#line 1439 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{

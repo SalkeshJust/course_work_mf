@@ -77,9 +77,9 @@ target_is:
 
 	| target_names ':' ':' 
 
-	| SPECIAL ':' {printf("special");}
+	| SPECIAL ':' 
 
-	| SPECIAL ':' ':' {printf("special");}
+	| SPECIAL ':' ':' 
 
 	;
 
@@ -93,13 +93,7 @@ target_names:
 
 target_name:
 
-	NAME {printf("target_name");}
-
-	| PATH {printf("target_path");}
-
-	| FILE_NAME {printf("target_file");}
-
-	| var_val
+	unit	
 
 	| template
 
@@ -107,9 +101,9 @@ target_name:
 
 template:
 
-	TEMPLATE {printf("template");}
+	TEMPLATE 
 
-	| '(' TEMPLATE ')' {printf("template");}
+	| '(' TEMPLATE ')' 
 
 	;
 
@@ -117,21 +111,9 @@ prequisites:
 
 	/* */
 
-	| prequisite
+	| unit
 
-	| prequisites prequisite
-
-	;
-
-prequisite:
-
-	NAME {printf("prequisite_name");}
-
-	| PATH {printf("prequisite_path");}
-
-	| FILE_NAME {printf("prequisite_file");}
-
-	| var_val {printf("prequisite_var_val");}
+	| prequisites unit
 
 	;
 
@@ -147,7 +129,7 @@ var:	var_name VAR_DEF EOL
 
 var_name:
 
-	NAME {printf("name");}
+	NAME 
 	
 	;
 
@@ -173,19 +155,13 @@ var_units:
 
 var_unit:
 	
-	NAME
+	unit
 
-	| '\'' NAME '\''
-
-	| '\"' NAME '\"'
-
-	| FILE_NAME
-
-	| PATH
+	| string_const
 
 	| SHELL_COMMAND
 
-	| FUNCTION {printf("function\n");}
+	| FUNCTION 
 
 	;
 
@@ -195,11 +171,7 @@ var_val:
 
 	'$' NAME
 
-	| '$' '$' NAME
-
-	| '$' '(' NAME ')'
-
-	| '$' '{' NAME '}' 
+	| '$' '$' NAME 
 
 	| '$' '(' var_unit ')'
 
@@ -215,14 +187,9 @@ var_val:
 
 	;
 
-elem:
-	NAME
+elem: NAME | FILE_NAME ;
 
-	| FILE_NAME
-
-	;
-
-cmd:	COMMAND EOL {printf("command");};
+cmd:	COMMAND EOL ;
 
 cond:	if conds EOL
 	
@@ -236,17 +203,9 @@ cond:	if conds EOL
 
 	;
 
-if:	IFEQ
+if:	IFEQ | IFNEQ ;
 
-	| IFNEQ
-
-	;
-
-ifdef:	IFDEF
-
-	|IFNDEF
-
-	;
+ifdef:	IFDEF | IFNDEF ;
 conds: string_conds | var_conds ;
 
 var_conds:	var_cond
