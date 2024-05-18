@@ -25,7 +25,7 @@ FILE* openFile();
 }
 
 %token EOL ERROR
-%token DEFINE ENDEF INCLUDE EXPORT IFDEF IFNDEF IFEQ IFNEQ ELSE ENDIF
+%token DEFINE DEFINELINE ENDEF INCLUDE EXPORT IFDEF IFNDEF IFEQ IFNEQ ELSE ENDIF
 %token <str> TEMPLATE
 %token <str> VAR_DEF
 %token <str> PATH
@@ -252,7 +252,9 @@ var_cond:	unit
 
 include:	INCLUDE units EOL;
 
-define:	DEFINE NAME EOL def_commands ENDEF EOL;
+define:	DEFINE NAME EOL def_commands ENDEF EOL
+	| DEFINELINE NAME def_command EOL
+;
 
 def_commands:
 

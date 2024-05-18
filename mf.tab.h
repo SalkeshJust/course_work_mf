@@ -57,25 +57,26 @@ extern int yydebug;
     EOL = 258,                     /* EOL  */
     ERROR = 259,                   /* ERROR  */
     DEFINE = 260,                  /* DEFINE  */
-    ENDEF = 261,                   /* ENDEF  */
-    INCLUDE = 262,                 /* INCLUDE  */
-    EXPORT = 263,                  /* EXPORT  */
-    IFDEF = 264,                   /* IFDEF  */
-    IFNDEF = 265,                  /* IFNDEF  */
-    IFEQ = 266,                    /* IFEQ  */
-    IFNEQ = 267,                   /* IFNEQ  */
-    ELSE = 268,                    /* ELSE  */
-    ENDIF = 269,                   /* ENDIF  */
-    TEMPLATE = 270,                /* TEMPLATE  */
-    VAR_DEF = 271,                 /* VAR_DEF  */
-    PATH = 272,                    /* PATH  */
-    FUNCTION = 273,                /* FUNCTION  */
-    VAR_AUT = 274,                 /* VAR_AUT  */
-    NAME = 275,                    /* NAME  */
-    FILE_NAME = 276,               /* FILE_NAME  */
-    SPECIAL = 277,                 /* SPECIAL  */
-    COMMAND = 278,                 /* COMMAND  */
-    SHELL_COMMAND = 279            /* SHELL_COMMAND  */
+    DEFINELINE = 261,              /* DEFINELINE  */
+    ENDEF = 262,                   /* ENDEF  */
+    INCLUDE = 263,                 /* INCLUDE  */
+    EXPORT = 264,                  /* EXPORT  */
+    IFDEF = 265,                   /* IFDEF  */
+    IFNDEF = 266,                  /* IFNDEF  */
+    IFEQ = 267,                    /* IFEQ  */
+    IFNEQ = 268,                   /* IFNEQ  */
+    ELSE = 269,                    /* ELSE  */
+    ENDIF = 270,                   /* ENDIF  */
+    TEMPLATE = 271,                /* TEMPLATE  */
+    VAR_DEF = 272,                 /* VAR_DEF  */
+    PATH = 273,                    /* PATH  */
+    FUNCTION = 274,                /* FUNCTION  */
+    VAR_AUT = 275,                 /* VAR_AUT  */
+    NAME = 276,                    /* NAME  */
+    FILE_NAME = 277,               /* FILE_NAME  */
+    SPECIAL = 278,                 /* SPECIAL  */
+    COMMAND = 279,                 /* COMMAND  */
+    SHELL_COMMAND = 280            /* SHELL_COMMAND  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -88,7 +89,7 @@ union YYSTYPE
 
 	char *str;
 
-#line 92 "mf.tab.h"
+#line 93 "mf.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

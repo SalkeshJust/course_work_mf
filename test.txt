@@ -1,6 +1,1 @@
-A := $(addsuffix hello)
-ifeq ($(A), $(BOBA))
-include test.txt
-define hello
-$(A)
-endef
+#define hello $(A)

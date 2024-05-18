@@ -13,6 +13,8 @@ TEXT [_a-zA-Z\*\-\+\@\\]
 ^"define"   {return DEFINE;}
 ^"endef"    {return ENDEF;}
 
+^"#define"   {return DEFINELINE;}
+
 "ifdef"     {return IFDEF;}
 "ifndef"    {return IFNDEF;}
 "ifeq"      {return IFEQ;}
