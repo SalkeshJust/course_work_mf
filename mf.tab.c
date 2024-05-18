@@ -1341,26 +1341,38 @@ yyreduce:
 #line 1342 "mf.tab.c"
     break;
 
+  case 13:
+#line 77 "mf.y"
+               {printf("target_path");}
+#line 1348 "mf.tab.c"
+    break;
+
   case 14:
 #line 79 "mf.y"
                     {printf("target_file");}
-#line 1348 "mf.tab.c"
+#line 1354 "mf.tab.c"
     break;
 
   case 17:
 #line 93 "mf.y"
              {printf("prequisite_name");}
-#line 1354 "mf.tab.c"
+#line 1360 "mf.tab.c"
+    break;
+
+  case 18:
+#line 95 "mf.y"
+               {printf("prequisite_path");}
+#line 1366 "mf.tab.c"
     break;
 
   case 19:
 #line 97 "mf.y"
                     {printf("prequisite_file");}
-#line 1360 "mf.tab.c"
+#line 1372 "mf.tab.c"
     break;
 
 
-#line 1364 "mf.tab.c"
+#line 1376 "mf.tab.c"
 
       default: break;
     }

@@ -1,3 +1,3 @@
-all : test.txt
+all : /hello/there/test.txt
 
 

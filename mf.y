@@ -74,7 +74,7 @@ target_name:
 
 	NAME {printf("target_name");}
 
-	| PATH
+	| PATH {printf("target_path");}
 
 	| FILE_NAME {printf("target_file");}
 
@@ -92,7 +92,7 @@ prequisite:
 
 	NAME {printf("prequisite_name");}
 
-	| PATH
+	| PATH {printf("prequisite_path");}
 
 	| FILE_NAME {printf("prequisite_file");}
 
