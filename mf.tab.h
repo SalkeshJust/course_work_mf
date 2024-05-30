@@ -78,7 +78,8 @@ extern int yydebug;
     FILE_NAME = 279,               /* FILE_NAME  */
     SPECIAL = 280,                 /* SPECIAL  */
     COMMAND = 281,                 /* COMMAND  */
-    SHELL_COMMAND = 282            /* SHELL_COMMAND  */
+    SHELL_COMMAND = 282,           /* SHELL_COMMAND  */
+    SHELL = 283                    /* SHELL  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -91,7 +92,7 @@ union YYSTYPE
 
 	char *str;
 
-#line 95 "mf.tab.h"
+#line 96 "mf.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

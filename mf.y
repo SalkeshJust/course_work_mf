@@ -37,7 +37,7 @@ FILE* openFile();
 %token <str> VAR_AUT
 %token <str> NAME
 %token <str> FILE_NAME
-%token <str> SPECIAL COMMAND SHELL_COMMAND
+%token <str> SPECIAL COMMAND SHELL_COMMAND SHELL
 
 %%
 
@@ -193,7 +193,19 @@ var_unit:
 
 	| var_val
 
-	| SHELL_COMMAND {yyerror("Error reading shell command");}
+	| SHELL_COMMAND 
+
+	| SHELL_COMMAND NAME {yyerror("Brackets in shell");}
+
+	| SHELL_COMMAND '-' {yyerror("Brackets in shell");}
+
+	| SHELL_COMMAND '$' {yyerror("Brackets in shell");}
+
+	| SHELL_COMMAND PATH {yyerror("Brackets in shell");}
+
+	| SHELL_COMMAND FILE_NAME {yyerror("Brackets in shell");}
+
+
 
 	;
 
