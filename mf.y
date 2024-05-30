@@ -1,3 +1,4 @@
+
 %start lines
 %{
 #include <stdio.h>
@@ -14,7 +15,8 @@ int errors = 0;
 int cond = 0;
 int yyerror(char *s)
 {
-	fprintf(stderr, "Line %d error is:%s\n", cur_line, s);
+	fprintf(stderr, "Line %d error is: %s\n", cur_line, s);
+	errors++;
 	return 0;
 }
 
@@ -103,6 +105,8 @@ target_name:
 
 	| template
 
+	| ERROR {yyerror("Wrong target name");}
+
 	;
 
 template:
@@ -131,6 +135,8 @@ prequisite: /* */
 	
 	| template
 
+	| ERROR {yyerror("It can't be prequisite");}
+
 	;
 
 var:	var_name VAR_DEF end_of_line
@@ -141,17 +147,27 @@ var:	var_name VAR_DEF end_of_line
 
 	| EXPORT var EOL end_of_line
 
+	| ERROR {yyerror("Wrong definition of variable");}
+
 	;
 
 var_name:
 
 	NAME 
+
+	| PATH {yyerror("Path can't be a name of variable");}
+
+	| FILE_NAME {yyerror("File can't be a name of variable");}
+
+	| '(' NAME ')' {yyerror("Name can't be written in brackets");}
 	
 	;
 
 var_units:
 
 	 var_unit
+	
+	| '(' var_units ')'
 
 	| var_units var_unit
 
@@ -177,6 +193,8 @@ var_unit:
 
 	| var_val
 
+	| SHELL_COMMAND {yyerror("Error reading shell command");}
+
 	;
 
 var_oper: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' | ',';
@@ -186,6 +204,10 @@ var_val:
 	'$' NAME
 
 	| '$' '$' NAME 
+
+	'$' PATH {yyerror("Path can't be a name of variable");}
+
+        | '$' '$' PATH {yyerror("Path can't be a name of variable");}
 
 	| '$' '(' var_unit ')'
 
@@ -199,7 +221,10 @@ var_val:
 
 	| '$' '{' var_unit ':' elems VAR_DEF elems '}'
 
+	| ERROR {yyerror("Error reading variable value.");}
+
 	;
+
 elems: elem
 
 	| elem '/' elem
@@ -250,6 +275,8 @@ define:	DEFINE NAME end_of_line def_commands ENDEF end_of_line
 
 	| DEFINELINE NAME def_command end_of_line
 
+	| ERROR {yyerror("Define is written wrong");}
+
 	;
 
 def_commands:
@@ -284,6 +311,8 @@ def_command:
 
 	| ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '!'
 
+	| ERROR {yyerror("Wrong def commands");}
+
 	;
 
 units:	unit
@@ -313,6 +342,12 @@ string_const:
 	'\'' NAME '\''
 
 	| '\"' NAME '\"'
+
+	| '\'' NAME '\"' {yyerror("Wrong quotes");}
+
+	| '\"' NAME '\'' {yyerror("Wrong quotes");}
+
+	| ERROR {yyerror("Trouble with string");}
 
 	;
 
