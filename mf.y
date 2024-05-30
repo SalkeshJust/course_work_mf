@@ -9,13 +9,15 @@ extern FILE *yyout;
 extern int yylex();
 
 int yyparse();
+int cur_line = 0;
+int errors = 0;
+int cond = 0;
 int yyerror(char *s)
 {
-	fprintf(stderr, "%s\n", s);
+	fprintf(stderr, "Line %d error is:%s\n", cur_line, s);
 	return 0;
 }
 
-int cur_line = 0;
 FILE* openFile();
 %}
 
@@ -61,7 +63,7 @@ line:
 
 	| define
 
-	| ERROR	
+	| ERROR	{yyerror("Unknown syntax");}
 
 	;
 
@@ -115,7 +117,11 @@ prequisites:
 
 	prequisite
 
+	| '(' prequisite ')'
+
 	| prequisites prequisite
+
+	| prequisites '(' prequisite ')'
 
 	;
 
@@ -204,16 +210,15 @@ elem: NAME | FILE_NAME | var_val | template;
 
 cmd:	COMMAND end_of_line ;
 
-cond:	if conds end_of_line
+cond:	if conds end_of_line {cond++;}
 	
-	| if '(' conds ')' end_of_line
+	| if '(' conds ')' end_of_line {cond++;}
 
-	| ifdef unit end_of_line
+	| ifdef unit end_of_line {cond++;}
 
-	| ELSE end_of_line
+	| ELSE end_of_line {if(cond == 0) yyerror("Write if before writing else"); else cond--;}
 
-	| ENDIF end_of_line
-
+	| ENDIF end_of_line {if(cond == 0) yyerror("Write if before writing else"); else cond--;}
 
 	;
 
@@ -311,7 +316,7 @@ string_const:
 
 	;
 
-end_of_line: EOL | COMMENT EOL ;
+end_of_line: EOL {cur_line++;} | COMMENT EOL {cur_line++;};
 	
 %%
 
@@ -340,6 +345,9 @@ int main(int argc, char* argv[])
 {
 	yyin = openFile(argc, argv);
 	yyparse();
+	if (cond > 0) errors++;
+	if (errors == 0) printf("\nEverything is OK");
+	else printf("Found %d errors", errors);
 	fclose(yyin);
 	return 0;
 }
