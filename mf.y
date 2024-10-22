@@ -1,401 +1,745 @@
-
-%start lines
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
+#include <string.h>
 
 extern FILE *yyin;
 extern FILE *yyout;
 extern int yylex();
 
+unsigned int line = 1;
 int yyparse();
-int cur_line = 0;
-int errors = 0;
-int cond = 0;
-int yyerror(char *s)
-{
-	fprintf(stderr, "Line %d error is: %s\n", cur_line, s);
-	errors++;
-	return 0;
-}
+int yyerror(const char *s);
+void Error(const char* err_type, int line_num);
 
-FILE* openFile();
+unsigned int cond = 0;
+unsigned int in_target = 0;
+int error_num = 0;
 %}
 
-%union
+%union 
 {
-	char *str;
+        char *str;
 }
 
-%token EOL ERROR COMMENT COMMAND_FOR_SHELL
-%token DEFINE DEFINELINE ENDEF INCLUDE EXPORT IFDEF IFNDEF IFEQ IFNEQ ELSE ENDIF
-%token <str> TEMPLATE
-%token <str> VAR_DEF
+
+%token COMMAND SHELL EOL SPECIAL IFNEQ IFEQ ELSE IFDEF IFNDEF ENDDEF ENDIF
+%token VAR_DEF TEMP T_TEMP INCL DEF EXPORT UNEXPORT ERROR ABSPATH DIR NOTDIR SUFFIX REALPATH CALL VALUE EVAL SHELL_COMMAND ADDPREFIX ADDSUFFIX
+%token FLAVOUR ORIGIN AND OR WORD SORT WORDLIST FIRSTWORD PATSUBST STRIP FINDSTRING FILTER SUBST WILDCARD FOREACH BASENAME FILECOMMAND JOIN
+
 %token <str> PATH
-%token <str> FUNCTION
-%token <str> VAR_AUT
+%token <str> STRING
+%token <str> VAR
 %token <str> NAME
-%token <str> FILE_NAME
-%token <str> SPECIAL COMMAND SHELL_COMMAND SHELL
+%token <str> FILE_
+
+%start lines
 
 %%
 
-lines:  /* */
+lines: 
+     line
+      
+    | lines line          
+             
+    ;
 
-	| line
+line: end_of_line
+    
+    | if_cond       
+    
+    | include                       
+    
+    | define              	
+    
+    | var 				{ in_target = 0;}
+    
+    | target				{ in_target = 1;}  
+    
+    | PATH '/' TEMP end_of_line		{ Error("There aren't unit from path only", line);}
+    
+    | var_val '/' TEMP end_of_line		{ Error("There aren't unit from path only", line);}
+    
+    | var_val '/' var_val end_of_line		{ Error("There aren't unit from path only", line);}
+    
+    | var_val end_of_line			{ Error("There aren't unit from variable value", line);}        
+    
+    | NAME end_of_line				{ Error("There aren't unit from text only", line);}
+    
+    | PATH end_of_line				{ Error("There aren't unit from path only", line);}
+    
+    | FILE_ end_of_line			{ Error("There aren't unit from file only", line);}
+    
+    | VAR end_of_line				{ Error("There aren't unit from variable autentification only", line);}
+    
+    | STRING end_of_line			{ Error("There aren't unit from string only", line);}
+    
+    | SHELL end_of_line			{ Error("There aren't unit from shell code only", line);}
+    
+    | SHELL_COMMAND shell_values ')' end_of_line               { Error("There aren't unit from shell code only", line);}
+                                    
+    | COMMAND end_of_line			{ if(in_target == 0) Error("There aren't unit from command only.", line);}
+    
+    | ERROR
+    
+    ;
 
-	| lines line
+target: 
+      target_is prequisites end_of_line      
+      
+    | target_is prequisites ';' target_units end_of_line
+    
+    | target_is prequisites ';' end_of_line
+    
+    ;
 
-	;
+target_is: 
+      target_names ':'
+      
+    | target_names ':'':'
+    
+    | SPECIAL ':'
+    
+    | SPECIAL ':'':'
+    
+    ;
 
-line:	
+target_names: 
 
-	end_of_line
+      target_names target_name
+      
+    | target_name
+    
+    ;
 
-	| target
+target_name: 
 
-	| var
+      NAME
+      
+    | PATH
+    
+    | PATH '/' TEMP
+    
+    | var_val '/' TEMP
+    
+    | var_val '/' var_val
+    
+    | FILE_
+    
+    | T_TEMP
+    
+    | TEMP
+         
+    | '('TEMP')'
+    
+    | var_val
+    
+    | VAR				{ Error("Variable autentification without certain variable", line);}
+    
+    | STRING				{Error("Target name can't be a string", line);}
+    
+    ;
+    
+    
+target_units: 
 
-	| cmd
+      target_unit
+      
+    | target_units target_unit
+    
+    ;
 
-	| cond
+target_unit: 
+      NAME
+      
+    | PATH '/' TEMP 
+      
+    | PATH
+    
+    | FILE_
+    
+    | VAR
+    
+    | var_val
+    
+    | var_val '/' TEMP
+    
+    | var_val '/' var_val
+    ;
 
-	| include
+var: 
+      var_name VAR_DEF end_of_line
+                      
+    | var_name VAR_DEF var_units end_of_line
+     
+    | EXPORT NAME end_of_line
+    
+    | EXPORT var
+    
+    | EXPORT end_of_line
+    
+    | UNEXPORT var_name end_of_line
+    
+    | UNEXPORT end_of_line
+    
+    ;
 
-	| define
+var_name: 
 
-	| ERROR	{yyerror("Unknown syntax");}
+      NAME
+      
+    | VAR			{Error("Variable authentication without sertain variable", line);}
+    
+    | PATH			{Error("Path instead of variable name", line);}
+    
+    | FILE_			{Error("Name of file instead of variable name", line);}
+    
+    | PATH '/' TEMP		{Error("Path can't be a name of variable", line);}
+    
+    | var_val '/' TEMP		{Error("Existing variable can't be a name of variable", line);}
+    
+    | var_val '/' var_val	{Error("Existing variable can't be a name of variable", line);}
+    
+    | var_val			{Error("Existing variable can't be a name of variable", line);}
+    
+    | STRING			{Error("String can't be a name of a variable", line);}
+    
+    ;
 
-	;
+var_units: 
 
-target:	target_is prequisites end_of_line
+      NAME        
+                                     
+    | STRING
+    
+    | PATH
+    
+    | FILE_
+    
+    |'(' var_units ')'
+    
+    |'{' var_units '}' 
+    
+    | var_unit
+    
+    | var_units var_unit
+    
+    | var_units NAME
+    
+    | var_units STRING
+    
+    | var_units PATH
+    
+    | var_units FILE_
+   
+    | var_units '(' var_units ')'
+    
+    | var_units '{' var_units '}'
+    
+    ;
 
-	| target_is prequisites ';' end_of_line
+var_unit: 
+    var_val
+    
+    | ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' 
+      
+    | funcs 
+    
+    | VAR_DEF
+    
+    | SHELL
+    
+    | SHELL_COMMAND shell_values ')'
+    
+    | TEMP
+       
+    | VAR					{Error("Variable authentication without certain variable", line);}
+    
+    ;
 
-	;
+var_val: 
 
-target_is:
+      '$' NAME
+      
+    | '$' '$' NAME
+    
+    | '$' '(' NAME  ')'   
+                         
+    | '$' '{' NAME  '}'  
+       
+    | '$' '(' var_unit ')'
+    
+    | '$' '{' var_unit '}'
+    
+    | '$' '$' '(' var_units ')'    
+                                 
+    | '$' '$' '{' var_units '}'
+    
+    | '$' '(' NAME  ':' elems VAR_DEF elems ')'
+             
+    | '$' '{' NAME  ':' elems VAR_DEF elems '}'  
+           
+    | '$' '(' var_unit  ':' elems VAR_DEF elems ')'    
+     
+    | '$' '{' var_unit  ':' elems VAR_DEF elems '}'
+    
+    | '$' STRING		{Error("You're calling for a string, not variable", line);}
+    
+    | '$' '(' STRING ')'	{Error("You're calling for a string, not variable", line);}
+    
+    | '$' '{' STRING '}'	{Error("You're calling for a string, not variable", line);}
+    
+    | '$' '$' STRING		{Error("You're calling for a string, not variable", line);}
+    
+    | '$' '(' PATH '/' TEMP ')'	{Error("You're calling for a string, not variable", line);}
+    
+    | '$' '{' PATH '/' TEMP '}'	{Error("You're calling for a string, not variable", line);}
+    
+    | '$' PATH			{Error("You're calling for a path, not variable", line);}
+    
+    | '$' '$' PATH		{Error("You're calling for a path, not variable", line);}
+    
+    | '$' '(' PATH ')'		{Error("You're calling for a path, not variable", line);}
+    
+    | '$' '{' PATH '}'		{Error("You're calling for a path, not variable", line);}
+    
+    | '$' FILE_		{Error("You're calling for a file name, not variable", line);}
+    
+    | '$' '$' FILE_		{Error("You're calling for a file name, not variable", line);}
+                       
+    | '$' '{' FILE_ '}'	{Error("You're calling for a file name, not variable", line);}
+    
+    | '$' '(' FILE_ ')'	{Error("You're calling for a file name, not variable", line);}
+    
+    | '$' '(' ')'		{Error("Empty variable calling", line);}
+    ;
 
-	template
 
-	| target_names ':' 
+elems:
+    TEMP
 
-	| target_names ':' ':' 
-
-	| SPECIAL ':' 
-
-	| SPECIAL ':' ':' 
-
-	;
-
-target_names:
-
-	target_name
-
-	| target_names target_name
-
-	| target_names '/' target_name
-
-	;
-
-target_name:
-
-	unit	
-
-	| template
-
-	| ERROR {yyerror("Wrong target name");}
-
-	;
-
-template:
-
-	TEMPLATE 
-
-	| '(' TEMPLATE ')' 
-
-	;
+    |  NAME
+      
+    | FILE_
+    
+    | var_val '/' TEMP
+    
+    | var_val '/' var_val
+    
+    | PATH '/' TEMP
+    
+    | PATH '/' var_val
+    
+    ;
 
 prequisites:
 
-	prequisite
-
-	| '(' prequisite ')'
-
-	| prequisites prequisite
-
-	| prequisites '(' prequisite ')'
-
-	;
-
-prequisite: /* */
-	
-	| unit
-	
-	| template
-
-	| ERROR {yyerror("It can't be prequisite");}
-
-	;
-
-var:	var_name VAR_DEF end_of_line
-
-	| var_name VAR_DEF var_units end_of_line
-	
-	| EXPORT NAME EOL end_of_line
-
-	| EXPORT var EOL end_of_line
-
-	| ERROR {yyerror("Wrong definition of variable");}
-
-	;
-
-var_name:
-
-	NAME 
-
-	| PATH {yyerror("Path can't be a name of variable");}
-
-	| FILE_NAME {yyerror("File can't be a name of variable");}
-
-	| '(' NAME ')' {yyerror("Name can't be written in brackets");}
+	| prequisite
 	
 	;
 
-var_units:
+prequisite:
 
-	 var_unit
+	prequisite_unit
+    
+    | prequisite prequisite_unit          
+    
+    ;
+
+prequisite_unit: 
+
+      NAME 
+      
+    | PATH
+    
+    | FILE_
+    
+    | funcs
+    
+    | TEMP
+         
+    | '('TEMP')'
+    
+    | var_val
+    
+    | VAR	{Error("There is a variable authentication without certain variable", line);}
+    
+    | STRING	{Error("String can't be a part of prequisite", line);}
+    
+    ;
+    
+if_cond: 
+
+      if conds end_of_line 
+    
+    | ifdef ifdef_conds end_of_line
+    
+    | ELSE	{if(!cond) yyerror("Can't find ifeq/ifdef statement. Write it down if you want to work with else.");}
+    
+    | ENDIF	{if(!cond) yyerror("Can't find ifeq/ifdef statement. Write it down if you want to work with else."); else --cond;}
+    
+    ;
+
+if:
+      IFEQ	{++cond;}
+      
+    | IFNEQ	{++cond;}
+    
+    ;
+
+ifdef: 
+      IFDEF	{++cond; } 
+      
+    | IFNDEF	{++cond; }
+    
+    ;
+    
+ifdef_conds:
+	NAME
 	
-	| '(' var_units ')'
-
-	| var_units var_unit
-
-	| var_units var_oper var_unit
-
-	| var_units FUNCTION var_units ')' 
-
-	| var_units VAR_DEF var_unit
-
-	| var_units '(' var_units ')'
-
-	| var_units '{' var_units '}'
-
-	;
-
-var_unit:
-
-	/* */
-	
-	| unit
-
-	| string_const
-
-	| var_val
-
-	| SHELL_COMMAND 
-
-	| SHELL_COMMAND NAME {yyerror("Brackets in shell");}
-
-	| SHELL_COMMAND '-' {yyerror("Brackets in shell");}
-
-	| SHELL_COMMAND '$' {yyerror("Brackets in shell");}
-
-	| SHELL_COMMAND PATH {yyerror("Brackets in shell");}
-
-	| SHELL_COMMAND FILE_NAME {yyerror("Brackets in shell");}
-
-
-
-	;
-
-var_oper: ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '\"' | '\'' | ',';
-
-var_val:
-
-	'$' NAME
-
-	| '$' '$' NAME 
-
-	'$' PATH {yyerror("Path can't be a name of variable");}
-
-        | '$' '$' PATH {yyerror("Path can't be a name of variable");}
-
-	| '$' '(' var_unit ')'
-
-	| '$' '{' var_unit '}'
-
-	| '$' '$' '(' var_units ')'
-	
-	| '$' '$' '{' var_units '}'
-
-	| '$' '(' var_unit ':' elems VAR_DEF elems ')'
-
-	| '$' '{' var_unit ':' elems VAR_DEF elems '}'
-
-	| ERROR {yyerror("Error reading variable value.");}
-
-	;
-
-elems: elem
-
-	| elem '/' elem
-
-	;
-
-elem: NAME | FILE_NAME | var_val | template;
-
-cmd:	COMMAND end_of_line ;
-
-cond:	if conds end_of_line {cond++;}
-	
-	| if '(' conds ')' end_of_line {cond++;}
-
-	| ifdef unit end_of_line {cond++;}
-
-	| ELSE end_of_line {if(cond == 0) yyerror("Write if before writing else"); else cond--;}
-
-	| ENDIF end_of_line {if(cond == 0) yyerror("Write if before writing else"); else cond--;}
-
-	;
-
-if:	IFEQ | IFNEQ ;
-
-ifdef:	IFDEF | IFNDEF ;
-
-conds: string_conds | var_conds ;
-
-var_conds:	var_cond
-
-		| var_conds ',' var_cond
-
-		;
-
-var_cond:	unit
-
-		| VAR_AUT
-
-		| string_const
-
-		| FUNCTION
-
-		;
-
-include:	INCLUDE units end_of_line;
-
-define:	DEFINE NAME end_of_line def_commands ENDEF end_of_line
-
-	| DEFINELINE NAME def_command end_of_line
-
-	| ERROR {yyerror("Define is written wrong");}
-
-	;
-
-def_commands:
-
-	def_command
-
-	| def_commands def_command
-
-	;
-	
-def_command:
-
-	VAR_DEF
-
-	| SHELL_COMMAND
-
-	| FILE_NAME
-
 	| PATH
-
-	| var_val
-
-	| FUNCTION
-
-	| VAR_AUT
-
-	| string_const
-
-	| COMMAND
 	
-	| end_of_line
+	| FILE_
+	
+	| VAR
+	
+	| var_val
+	
+	;
 
-	| ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '!'
+conds:
 
-	| ERROR {yyerror("Wrong def commands");}
+	'(' cond ',' cond ')'
+	
+	| '(' conds ',' cond ')'
+	
+	| '(' ',' cond ')'
+	
+	| '(' cond ',' ')'
+	
+	| '(' ',' ')'
+	
+	| STRING STRING
+	
+	;
+
+cond: 
+
+	VAR
+
+    | NAME
+     
+    | PATH
+    
+    | FILE_
+    
+    | var_val
+    
+    | STRING
+    
+    | funcs
+    
+    ;
+
+define:	DEF NAME end_of_line def_commands ENDDEF end_of_line
 
 	;
 
-units:	unit
+def_commands: 
 
-	| units unit
+      def_command
+      
+    | def_commands def_command
+    
+    ;
 
+def_command: 
+     
+     ':' | '|' | '+' | '/' | '-' | '&' | ';' | '[' | ']' | '<' | '>' | '!'
+    
+    | VAR_DEF
+    
+    | SHELL
+    
+    | SHELL_COMMAND shell_values ')'
+    
+    | FILE_
+    
+    | var_val
+    
+    | NAME
+    
+    | funcs
+    
+    | VAR
+    
+    | PATH
+    
+    | STRING
+    
+    | COMMAND
+    
+    | end_of_line
+    
+    ;
+
+include: 
+	INCL include_units
+	
 	;
 
-unit:	NAME
-
+include_units:
+	
+	NAME
+	
+	| PATH '/' TEMP
+	
+	| var_val '/' TEMP
+	
+	| var_val '/' var_val
+	
 	| PATH
-
-	| FILE_NAME
-
-	| var_val
-
-	;	
-
-string_conds:	string_const
 	
-		| string_conds string_const
+	| FILE_
+	
+	| var_val
+	
+	;
+	
+end_of_line:	EOL {line++;} ;
 
-		;
- 
-string_const:
+funcs:
 
-	'\'' NAME '\''
-
-	| '\"' NAME '\"'
-
-	| '\'' NAME '\"' {yyerror("Wrong quotes");}
-
-	| '\"' NAME '\'' {yyerror("Wrong quotes");}
-
-	| ERROR {yyerror("Trouble with string");}
-
+	funcs_not_eval
+	
+	| EVAL funcs_not_eval ')'
+	
 	;
 
-end_of_line: EOL {cur_line++;} | COMMENT EOL {cur_line++;};
+funcs_not_eval:
+
+	ABSPATH names ')'
 	
+	| DIR names ')'
+	
+	| NOTDIR names ')'
+	
+	| SUFFIX names ')'
+	
+	| REALPATH names ')'
+	
+	| CALL NAME ',' var_values ')'
+	
+	| VALUE NAME ')'
+	
+	| FLAVOUR NAME ')'
+	
+	| ORIGIN NAME ')'
+	
+	| AND add_conds ')'
+	
+	| OR add_conds ')'
+	
+	| WORD NAME ',' names ')'
+	
+	| SORT names ')'
+	
+	| WORDLIST NAME ',' NAME ',' names ')'
+	
+	| FIRSTWORD names ')'
+	
+	| PATSUBST names',' names ',' names ')'
+	
+	| STRIP names ')'
+	
+	| FINDSTRING names ',' names ')'
+	
+	| FILTER names ',' names ')'
+	
+	| SUBST names ',' names ',' names ')'
+	
+	| WILDCARD names ')'
+	
+	| FOREACH NAME ',' var_val ',' names ')'
+	
+	| BASENAME names ')'
+	
+	| FILECOMMAND op file_name ')'
+	
+	| FILECOMMAND op file_name ',' names ')'
+	
+	| JOIN names ',' names ')'
+	
+	| ERROR names ')'
+	
+	| ADDPREFIX names ',' names ')'
+	
+	| ADDSUFFIX names ',' names ')'
+	
+	| ABSPATH ')' {Error("No args in abspath func", line);}
+	
+	| JOIN ')' {Error("No args in join func", line);}
+	
+	| FILECOMMAND ')' {Error("No args in file func", line);}
+	
+	| BASENAME ')' {Error("No args in basename func", line);}
+	
+	| FOREACH ')' {Error("No args in foreach func", line);}
+	
+	| WILDCARD ')' {Error("No args in wildcard func", line);}
+	
+	| SUBST ')' {Error("No args in subst func", line);}
+	
+	| FILTER ')' {Error("No args in filter func", line);}
+	
+	| FINDSTRING ')' {Error("No args in findstring func", line);}
+	
+	| STRIP ')' {Error("No args in strip func", line);}
+	
+	| DIR ')' {Error("No args in dir func", line);}
+	
+	| NOTDIR ')' {Error("No args in notdir func", line);}
+	
+	| SUFFIX ')' {Error("No args in suffix func", line);} 
+	
+	| REALPATH ')' {Error("No args in realpath func", line);}
+	
+	| CALL ')' {Error("No args in call func", line);}
+	
+	| VALUE ')' {Error("No args in value func", line);}
+	
+	| FLAVOUR ')' {Error("No args in flavour func", line);}
+	
+	| ORIGIN ')' {Error("No args in origin func", line);}
+	
+	| AND ')' {Error("No args in and func", line);}
+	
+	| OR ')' {Error("No args in or func", line);}
+	
+	| WORD ')' {Error("No args in word func", line);}
+	
+	| SORT ')' {Error("No args in sort func", line);}
+	
+	| WORDLIST ')' {Error("No args in wordlist func", line);}
+	
+	| FIRSTWORD ')' {Error("No args in firstword func", line);}
+	
+	| PATSUBST ')' {Error("No args in patsubst func", line);}
+	
+	;
+
+file_name:
+
+	FILE_
+	
+	| TEMP
+	
+	| T_TEMP
+	;
+	
+op:
+
+	'>'
+	
+	| '>' '>'
+	
+	| '<'
+	
+	;
+
+names:
+	
+	name
+	
+	| names name ;
+	
+name:
+
+	FILE_
+	
+	| PATH
+	
+	| var_val 
+	
+	| TEMP
+	
+	| NAME
+	;
+	
+var_values:
+
+	var_val
+	
+	| var_names
+	
+	| var_values ',' var_val 
+	
+	| var_values ',' var_names
+	;
+	
+var_names:
+
+	NAME ;
+	
+add_conds:
+
+	cond
+	
+	| add_conds ',' cond ;
+
+shell_values:
+
+	shell_value
+	
+	| shell_values shell_value;
+	
+shell_value:
+
+	STRING
+	
+	| NAME
+	
+	| FILE_
+	
+	| PATH
+	
+	| TEMP
+	
+	| T_TEMP
+	
+	| var_val
+	
+	;
+
+
 %%
 
-FILE* openFile(int argc,char* argv[])
-{
-	FILE *f;
-	if (argc == 1)
-	{
-		yyerror("Please write a file, we can't work without it.\n");
-		return;
-	}
-	else if(argc == 2)
-	{
-		f = fopen(argv[1], "r");
-		if(!f)
-		{
-			yyerror("Can't open your file.\n");
-			return;
-		}
-		printf("File %s is opened\n", argv[1]);
-		return f;
-	}
+void Error(const char* err_type, int line_num) {
+    printf("WARNING in line %u: %s \n", line_num - 1, err_type);
+    error_num++;
 }
 
-int main(int argc, char* argv[])
-{
-	yyin = openFile(argc, argv);
-	yyparse();
-	if (cond > 0) errors++;
-	if (errors == 0) printf("\nEverything is OK");
-	else printf("Found %d errors", errors);
-	fclose(yyin);
-	return 0;
-}
+int yyerror(const char *str) {
+printf("ERROR Line %u: %s\n", line, str);
+printf("NOT SUCCESSFUL\n");
+exit(0);};
 
+int main(int argc, char **argv)
+{
+  if (argc == 2) {
+    yyin = fopen(argv[1], "r");
+    if(!yyin)
+    {
+      printf("ERROR Can't open source code.\n");
+      return 1;
+    }
+  }
+  else {
+    printf("ERROR Either no compiler or no source code in cmd\n");
+    return 1;
+  }
+  yyparse();
+  if (error_num == 0) printf("SUCCESS\n");
+  else printf("NOT SUCCESSFUL\n");
+  return 0;
+}
