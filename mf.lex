@@ -1,20 +1,51 @@
 %{
-#include "mf.tab.h"
-%}
+#include "y.tab.c"
+extern unsigned int line;
 
-DIGIT [0-9]
-TEXT [_a-zA-Z\*\-\+\@\\]
+extern int yyerror(const char *);
+%}
 
 %%
 
-^"include"  {return INCLUDE;}
-^"export" {return EXPORT;}
+"#".*	{}
 
-^"define"   {return DEFINE;}
-^"endef"    {return ENDEF;}
+"+"	{return '+';}
+"-"	{return '-';}
+"/"	{return '/';}
+"("	{return '(';}
+")"	{return ')';}
+"["	{return '[';}
+"]"	{return ']';}
+"{"	{return '{';}
+"}"	{return '}';}
+"&"	{return '&';}
+"|"	{return '|';}
+"<"	{return '<';}
+">"	{return '>';}
+"\""	{return '"';}
+"\'"	{return '\'';}
+"`"	{return '`';}
+";"	{return ';';}
+","	{return ',';}
+"?"	{return '?';}
+"!"	{return '!';}
+":"	{return ':';}
+"$"	{return '$';}
+"@"	{}
 
-^"#define"   {return DEFINELINE;}
+"::="	{return VAR_DEF;}
+"="	{return VAR_DEF;}
+":="	{return VAR_DEF;}
+"!="	{return VAR_DEF;}
+"?="	{return VAR_DEF;}
+"+="	{return VAR_DEF;}
 
+^"define"   {return DEF;}
+^"endef"    {return ENDDEF;}
+^"include"  {return INCL;}
+^"-include"  {return INCL;}
+^"export"   {return EXPORT;}
+^"unexport" {return UNEXPORT;}
 "ifdef"     {return IFDEF;}
 "ifndef"    {return IFNDEF;}
 "ifeq"      {return IFEQ;}
@@ -22,88 +53,83 @@ TEXT [_a-zA-Z\*\-\+\@\\]
 "else"      {return ELSE;}
 "endif"     {return ENDIF;}
 
-"#".*	{return COMMENT;}
+\n 		{return EOL;}
+\\\n[ \t]*	{}
+[ \t]*\n	{return EOL;}
 
-"%"(.{TEXT}+)* {return TEMPLATE;}
+^\t.*			{return COMMAND;}
+^\t.*(\\\n[ \t]*.*)*	{return COMMAND;}
 
+\$\("error "      {return ERROR;}
+\$\("abspath "    {return ABSPATH;}
+\$\("addprefix "  {return ADDPREFIX;}
+\$\("addsuffix "  {return ADDSUFFIX;}
+\$\("and "        {return AND;}
+\$\("basename "   {return BASENAME;}
+\$\("call "       {return CALL;}
+\$\("dir "        {return DIR;}
+\$\("eval "       {return EVAL;}
+\$\("file "       {return FILECOMMAND;}
+\$\("firstword "  {return FIRSTWORD;}
+\$\("findstring " {return FINDSTRING;}
+\$\("foreach "    {return FOREACH;}
+\$\("filter-out " {return FILTER;}
+\$\("filter "     {return FILTER;}
+\$\("flavour "    {return FLAVOUR;}
+\$\("join "       {return JOIN;}
+\$\("notdir "     {return NOTDIR;}
+\$\("or "         {return OR;}
+\$\("origin "     {return ORIGIN;}
+\$\("patsubst "   {return PATSUBST;}
+\$\("realpath "   {return REALPATH;}
+\$\("sort "       {return SORT;}
+\$\("strip "      {return STRIP;}
+\$\("suffix "     {return SUFFIX;}
+\$\("subst "      {return SUBST;}
+\$\("value "      {return VALUE;}
+\$\("wordlist "   {return WORDLIST;}
+\$\("wildcard "   {return WILDCARD;}
+\$\("word "       {return WORD;}
 
-^\t.*	{return COMMAND;}
-^\t.*(\\\n[ \t]*.*)* {return COMMAND;}
+".DEFAULT"          		{return SPECIAL;}
+".DELETE_ON_ERROR"  		{return SPECIAL;}
+".EXPORT_ALL_VARIABLES" 	{return SPECIAL;}
+".IGNORE"           		{return SPECIAL;}
+".INTERMEDIATE"     		{return SPECIAL;}
+".NOTPARALLEL"      		{return SPECIAL;}
+".PHONY"            		{return SPECIAL;}
+".PRECIOUS"         		{return SPECIAL;}
+".SECONDARY"        		{return SPECIAL;}
+".SILENT"           		{return SPECIAL;}
+".SUFFIXES"         		{return SPECIAL;}
 
-\`[^\`]*\` {return SHELL_COMMAND;}
-$\(shell[^\)]*\) {return SHELL_COMMAND;}
+\`[^\`]*\`    		{return SHELL;}
+$\("shell "	{return SHELL_COMMAND;}
 
-$\(abspath	{return FUNCTION;}
-$\(addsuffix	{return FUNCTION;}
-$\(addprefix	{return FUNCTION;}
-$\(and		{return FUNCTION;}
-$\(basename	{return FUNCTION;}
-$\(call		{return FUNCTION;}
-$\(dir		{return FUNCTION;}
-$\(eval		{return FUNCTION;}
-$\(error	{return FUNCTION;}
-$\(file		{return FUNCTION;}
-$\(firstword	{return FUNCTION;}
-$\(findstring	{return FUNCTION;}
-$\(filter-out	{return FUNCTION;}
-$\(foreach	{return FUNCTION;}
-$\(flavour	{return FUNCTION;}
-$\(if		{return FUNCTION;}
-$\(join		{return FUNCTION;}
-$\(notdir	{return FUNCTION;}
-$\(or		{return FUNCTION;}
-$\(origin	{return FUNCTION;}
-$\(patsubst	{return FUNCTION;}
-$\(realpath	{return FUNCTION;}
-$\(sort		{return FUNCTION;}
-$\(strip	{return FUNCTION;}
-$\(suffix	{return FUNCTION;}
-$\(subst	{return FUNCTION;}
-$\(value	{return FUNCTION;}
-$\(wordlist	{return FUNCTION;}
-$\(wildcard	{return FUNCTION;}
-$\(word		{return FUNCTION;}
+$"@"	{yylval.str = strdup(yytext);return VAR;}
+$"%"	{yylval.str = strdup(yytext);return VAR;}
+$"<"	{yylval.str = strdup(yytext);return VAR;}
+$"?"	{yylval.str = strdup(yytext);return VAR;}
+$"^"	{yylval.str = strdup(yytext);return VAR;}
+$"+"	{yylval.str = strdup(yytext);return VAR;}
+$"*"	{yylval.str = strdup(yytext);return VAR;}
 
-"("         { return '('; }
-")"         { return ')'; }
-"{"         { return '{'; }
-"$"         { return '$'; }
-"]"         { return ']'; }
-"["         { return '['; }
-"-"         { return '-'; }
-"+"         { return '+'; }
-"\""        { return '"'; }
-"|"         { return '|'; }
-";"         { return ';'; }
-"/"         { return '/'; }
-"&"         { return '&'; }
-"<"         { return '<'; }
-"}"         { return '}'; }
-","         { return ','; }           
-"?"         { return '?'; }
-"!"         { return '!'; }
-":"         { return ':'; }
-">"         { return '>'; }
-"`"         { return '`'; }
-\'          { return '\''; }
+\'[^\'\n]*\'              {yylval.str = strdup(yytext); return STRING;}
+\"[^\"\n]*\"              {yylval.str = strdup(yytext); return STRING;}
 
-\n	    { return EOL;}
-<<EOF>>	    { static int once = 0; return once++ ? 0 : EOL;}
+^"%"([_\*\-\+\@\\A-Za-z0-9]|[\.])*                     {return T_TEMP;}
+"%"([_\*\-\+\@\\A-Za-z0-9]|[\.])*                      {return TEMP;}
 
-"::="|"="|[":"|"!"|"?"|"+"]"=" {return VAR_DEF;}
-$("@"|"%"|"<"|"?"|"^"|"+"|"*") {return VAR_AUT;}
+([_\*\-\+\@\\A-Za-z0-9])+         						{yylval.str = strdup(yytext);return NAME;}
+([_\*\-\+\@\\A-Za-z0-9\]|[\.])+    						{yylval.str = strdup(yytext);return FILE_;}
+(\/|[\.\.]|[\.])?(([_\*\-\+\@\\A-Za-z0-9]|[\.]|[\.\.])+[\/]?)+([\/]|[\/\*])? {yylval.str = strdup(yytext);return PATH; }
 
-".PHONY"|".SUFFIXES"|".DEFAULT"|".PRECIOUS"|".INTERMEDIATE"|".SECONDARY"|".DELETE_ON_ERROR"|".IGNORE"|".SILENT"|".EXPORT_ALL_VARIABLES"|".NOTPARALLEL"    { return SPECIAL; }
-	
-({TEXT}|{DIGIT})+ {yylval.str = strdup(yytext); return NAME;}
-(({TEXT}|{DIGIT})+)?([\.]({TEXT})+)+ {yylval.str = strdup(yytext); return FILE_NAME;}  
-(\/|[\.\.]|[\.])?(({TEXT}|{DIGIT}|[\.]|[\.\.])+[\/]?)+([\/]|[\/\*])? {yylval.str = strdup(yytext); return PATH;}
-
+[ \f\t\r\v]
+.            				{ printf("Unknowm symbol %c\n",yytext[0]);yyerror("lex error"); exit(0); }
 
 %%
 
-
 int yywrap()
 {
-	return 1;
+    return 1;
 }
